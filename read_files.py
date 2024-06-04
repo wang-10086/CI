@@ -118,3 +118,23 @@ def read_buttons(button_data_path):
                 buttons.append(button)
 
     return buttons
+
+
+def read_switches(switch_data_path):
+    switchs = []
+    with open(switch_data_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+        for line in lines:
+            line = line.strip()
+            if line:
+                parts = line.split(':')
+                switch_id = parts[0].strip()
+                coords = parts[1].strip().split(',')
+                start_x, start_y = int(coords[0]), int(coords[1])
+                end_x, end_y = int(coords[2]), int(coords[3])
+                switch = Switch(switch_id)
+                switch.start_point = [start_x, start_y]
+                switch.end_point = [end_x, end_y]
+                switchs.append(switch)
+
+    return switchs
