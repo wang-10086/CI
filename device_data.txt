@@ -1,6 +1,0 @@
-signal:
-X1, X2, S1, S2
-switch:
-1, 2, 3, 4
-track:
-1DG, 2DG, 3DG, 4DG

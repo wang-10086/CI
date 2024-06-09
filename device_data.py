@@ -17,6 +17,8 @@ class Signal:
         self.LockFlag = 0
         self.OpenedFlag = 0
         self.SignalControl = 0
+        self.point = None
+        self.direction = None
 
     @property
     def SignalStatus(self):
@@ -57,6 +59,9 @@ class Switch:
         self.CallonLockFlag = 0
         self.SwitchControl = 0
         self.DelayParameter = 0
+        self.start_point = None
+        self.end_point_0 = None
+        self.end_point_1 = None
 
     @property
     def SwitchStatus(self):

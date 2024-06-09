@@ -36,7 +36,7 @@ if __name__ == '__main__':
         route_number=1,
         start_button="ButtonA",
         end_button="ButtonB",
-        signal_name="SignalX",
+        signal_name=["SignalX"],
         signal_display="Green",
         switches=switches,
         opposing_signals=["SignalY", "SignalZ"],

@@ -29,7 +29,7 @@ def readInterlockTable(excel_path):
         route_number = row.get("进路序号")
         start_button = row.get("排列进路按下起点按钮")
         end_button = row.get("排列进路按下终点按钮")
-        signal_name = row.get("信号机名称")
+        signal_name = row.get("信号机名称").split(",") if not pd.isna(row.get("信号机名称")) else []
         signal_display = row.get("信号机显示")
         switches = parse_switches(row.get("道岔"))
         opposing_signals = row.get("敌对信号").split(",") if not pd.isna(row.get("敌对信号")) else []
@@ -75,8 +75,10 @@ def read_signals(signal_data_path):
                 signal_id = parts[0].strip()
                 coords = parts[1].strip().split(',')
                 location_x, location_y = int(coords[0]), int(coords[1])
+                direction = int(coords[2])
                 signal = Signal(signal_id)
                 signal.point = [location_x, location_y]
+                signal.direction = direction
                 signals.append(signal)
 
     return signals
@@ -131,10 +133,12 @@ def read_switches(switch_data_path):
                 switch_id = parts[0].strip()
                 coords = parts[1].strip().split(',')
                 start_x, start_y = int(coords[0]), int(coords[1])
-                end_x, end_y = int(coords[2]), int(coords[3])
+                end_x_0, end_y_0 = int(coords[2]), int(coords[3])
+                end_x_1, end_y_1 = int(coords[4]), int(coords[5])
                 switch = Switch(switch_id)
                 switch.start_point = [start_x, start_y]
-                switch.end_point = [end_x, end_y]
+                switch.end_point_0 = [end_x_0, end_y_0]
+                switch.end_point_1 = [end_x_1, end_y_1]
                 switchs.append(switch)
 
     return switchs
