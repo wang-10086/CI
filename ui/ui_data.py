@@ -1,7 +1,5 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTextEdit, QLabel, QInputDialog, QMessageBox
-from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QFont, QPalette
-from PyQt5.QtCore import QTimer, Qt, QPoint
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtCore import QTimer
 
 
 class SignalButton(QPushButton):

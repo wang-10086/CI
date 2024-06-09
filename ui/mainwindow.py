@@ -1,112 +1,22 @@
 import sys
-from device_data import Signal, Switch, Track, Button
-from ui_data import SignalButton, SwitchButton
-from route import Route
-from read_files import readInterlockTable, read_tracks, read_signals, read_joints, read_buttons, read_switches
-from PyQt5 import QtWidgets, uic, QtCore
-from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QFont, QPalette
+from ui.ui_data import SignalButton, SwitchButton
+from ui.ui_form import Ui_Form
+from utils.read_files import readInterlockTable, read_tracks, read_signals, read_joints, read_switches
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QFont
 from PyQt5.QtCore import QPoint, Qt
-from PyQt5.QtWidgets import QPushButton, QMessageBox, QInputDialog, QLineEdit, QVBoxLayout, QTextEdit, QLabel
-
-
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(1500, 900)
-        self.setPalette(QPalette(QColor(0, 0, 0)))
-
-        self.label1 = QLabel(Form)
-        self.label1.setGeometry(50, 250, 300, 50)  # 设置文本标签的位置和大小
-        self.label1.setStyleSheet("color: white;")  # 设置文本颜色
-        self.label1.setText("北京方面")  # 设置文本内容
-        font = QFont()
-        font.setPointSize(15)  # 设置字体大小
-        self.label1.setFont(font)
-
-        self.label2 = QLabel(Form)
-        self.label2.setGeometry(1350, 250, 300, 50)  # 设置文本标签的位置和大小
-        self.label2.setStyleSheet("color: white;")  # 设置文本颜色
-        self.label2.setText("广州方面")  # 设置文本内容
-        self.label2.setFont(font)
-
-        self.label3 = QLabel(Form)
-        self.label3.setGeometry(1080, 540, 300, 50)  # 设置文本标签的位置和大小
-        self.label3.setStyleSheet("color: white;")  # 设置文本颜色
-        self.label3.setText("信息提示窗")  # 设置文本内容
-        self.label3.setFont(font)
-
-        self.textEdit = QTextEdit(self)  # 创建文本框
-        self.textEdit.setStyleSheet("QTextEdit { color: black;background-color: lightgrey; }")
-        self.textEdit.setGeometry(QtCore.QRect(1080, 580, 400, 300))
-        self.textEdit.setReadOnly(True)  # 设置为只读，防止用户编辑
-
-        # 创建功能按钮
-        self.button1 = QPushButton("总人解", self)
-        self.button1.setGeometry(50, 850, 100, 40)  # 设置按钮的位置和大小
-        self.button1.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button1.clicked.connect(self.on_zongrenjie_click)  # 绑定事件
-
-        self.button2 = QPushButton("总取消", self)
-        self.button2.setGeometry(150, 850, 100, 40)  # 设置按钮的位置和大小
-        self.button2.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button2.clicked.connect(self.on_zongquxiao_click)
-
-        self.button3 = QPushButton("总定位", self)
-        self.button3.setGeometry(250, 850, 100, 40)  # 设置按钮的位置和大小
-        self.button3.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button3.clicked.connect(self.on_zongdingwei_click)
-
-        self.button4 = QPushButton("总反位", self)
-        self.button4.setGeometry(350, 850, 100, 40)
-        self.button4.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button4.clicked.connect(self.on_zongfanwei_click)
-
-        self.button5 = QPushButton("单锁", self)
-        self.button5.setGeometry(450, 850, 100, 40)
-        self.button5.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button5.clicked.connect(self.on_dansuo_click)
-
-        self.button6 = QPushButton("单解", self)
-        self.button6.setGeometry(550, 850, 100, 40)
-        self.button6.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button6.clicked.connect(self.on_danjie_click)
-
-        self.button7 = QPushButton("模拟行车", self)
-        self.button7.setGeometry(650, 850, 100, 40)
-        self.button7.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button7.clicked.connect(self.on_run_click)
-
-        self.button8 = QPushButton("办理进路", self)
-        self.button8.setGeometry(750, 850, 100, 40)
-        self.button8.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button8.clicked.connect(self.route_process_click)
-
-        # 添加文本框到布局中
-        layout = QVBoxLayout()
-        layout.addWidget(self.textEdit)
-        self.setLayout(layout)
-
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
-
-    def retranslateUi(self, Form):
-        _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-
-    def addMessage(self, message):
-        """向文本框中添加新信息"""
-        self.textEdit.append(message)
+from PyQt5.QtWidgets import QMessageBox, QInputDialog, QLineEdit
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_Form):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
-        interlock_table_path = '联锁表.xlsx'
-        signal_data_path = 'signal_data.txt'
-        track_data_path = 'track_data.txt'
-        joint_data_path = 'joint_data.txt'
-        switch_data_path = 'switch_data.txt'
+        interlock_table_path = './data/联锁表.xlsx'
+        signal_data_path = './data/signal_data.txt'
+        track_data_path = './data/track_data.txt'
+        joint_data_path = './data/joint_data.txt'
+        switch_data_path = './data/switch_data.txt'
 
         # 记录点击的信号机ID
         self.first_signal_id = None
@@ -147,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
             # 绘制道岔按钮
             switch_btn = SwitchButton(switch.SwitchID, switch.SwitchID, self)
             font1 = QFont()
-            font1.setPointSize(6)
+            font1.setPointSize(8)
             switch_btn.setFont(font1)
             switch_btn.point = [x, y]
             switch_btn.move(*switch_btn.point)
@@ -223,7 +133,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
             painter.setPen(pen)
             if signal.SignalID[0] == 'D':
                 # 调车信号机
-                painter.setBrush(QBrush(QColor(0, 0, 255)))  # 调车信号机使用蓝色填充
+                if signal.SignalStatus == 1:
+                    painter.setBrush(QBrush(QColor(0, 0, 255)))  # 蓝色表示信号机开放
+                else:
+                    painter.setBrush(QBrush(QColor(224, 224, 224)))  # 灰色表示信号机关闭
                 center_point = QPoint(signal.point[0], signal.point[1])
                 painter.drawEllipse(center_point, radius, radius)
                 # 绘制信号机名称
@@ -338,6 +251,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
         if ok and password == "1234":  # 将 "正确密码" 替换为你实际使用的密码
             self.textEdit.append("密码正确，进行下一步操作")
             QMessageBox.information(self, "信息", "密码正确，进行下一步操作")
+            self.cancelFlag = 1
 
             self.addMessage("总人解")
 
@@ -705,6 +619,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
 
         else:
             self.addMessage("没有选排的进路需要取消")
+
+    def driving_simulation(self):
+        """
+        模拟行车函数
+        """
+        pass
 
 
 if __name__ == '__main__':
