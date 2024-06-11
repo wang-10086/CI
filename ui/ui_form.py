@@ -68,7 +68,7 @@ class Ui_Form(object):
         self.button7 = QPushButton("模拟行车", self)
         self.button7.setGeometry(650, 850, 100, 40)
         self.button7.setStyleSheet("QPushButton { color: black; background-color:lightgrey; }")
-        self.button7.clicked.connect(self.on_run_click)
+        self.button7.clicked.connect(self.driving_simulation)
 
         # 添加文本框到布局中
         layout = QVBoxLayout()

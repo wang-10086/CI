@@ -1,10 +1,12 @@
 import sys
+import time
+
 from ui.ui_data import SignalButton, SwitchButton
 from ui.ui_form import Ui_Form
 from utils.read_files import readInterlockTable, read_tracks, read_signals, read_joints, read_switches
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QFont
-from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtCore import QPoint, Qt, QTimer
 from PyQt5.QtWidgets import QMessageBox, QInputDialog, QLineEdit
 
 
@@ -579,12 +581,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
         """
         pass
 
-    def route_normal_unlock(self):
-        """
-        进路正常解锁函数
-        """
-        pass
-
     def route_cancel(self):
         """
         进路取消函数
@@ -599,6 +595,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
                 for signal in self.signals:
                     if signal.SignalID == signal_id:
                         signal.SignalStatus = 0
+            self.repaint()
 
             # 解锁道岔
             for switch_id in switch_ids.keys():
@@ -606,6 +603,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
                     if switch.SwitchID == switch_id:
                         switch.LockFlag = 0
                         print(f"道岔{switch.SwitchID}解锁")
+
+            time.sleep(3)   # 延时3s解锁区段
 
             # 解锁区段
             for track_id in track_ids:
@@ -621,10 +620,105 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Form):
             self.addMessage("没有选排的进路需要取消")
 
     def driving_simulation(self):
-        """
-        模拟行车函数
-        """
-        pass
+        """模拟行车函数"""
+        if not self.current_routes:
+            self.addMessage("没有选排的进路")
+            return
+
+        # 将所有区段的占用状态清空
+        for track in self.tracks:
+            track.TrackStatus = 0
+        self.update()
+
+        route = self.current_routes[0]
+        self.track_ids = route.track_sections[:]
+        self.section_status = {track_id: 0 for track_id in self.track_ids}  # 区段出清状况
+        self.current_track_index = 0
+
+        self.train_timer = QTimer(self)
+        self.train_timer.timeout.connect(self.move_train)
+        self.train_timer.start(2000)  # 每2秒移动一次
+
+    def move_train(self):
+        """列车移动"""
+        if self.current_track_index >= len(self.track_ids):
+            self.addMessage("列车已到达终点")
+            self.train_timer.stop()
+            return
+
+        track_id = self.track_ids[self.current_track_index]
+
+        for track in self.tracks:
+            if track.TrackID == track_id:
+                track.TrackStatus = 1  # 标记为占用
+                self.addMessage(f"列车占用区段: {track_id}")
+                self.update()
+
+        # 将上一个区段标记为未占用
+        if self.current_track_index >= 1:
+            previous_track_id = self.track_ids[self.current_track_index - 1]
+            for track in self.tracks:
+                if track.TrackID == previous_track_id:
+                    track.TrackStatus = 0  # 标记为未占用
+                    self.section_status[self.current_track_index - 1] = 1  # 区段出清
+                    self.addMessage(f"列车释放区段: {previous_track_id}")
+                    self.update()
+                else:
+                    pass
+
+            self.route_normal_unlock()
+
+        self.current_track_index += 1
+
+    def route_normal_unlock(self):
+        """进路正常解锁函数"""
+        self.addMessage("尝试解锁区段")
+        track_id = self.track_ids[self.current_track_index - 1]
+
+        if not self.check_track_isLocked(track_id):
+            self.addMessage(f"区段{track_id}未锁闭，无法解锁")
+            return
+
+        if self.check_train_occupancy(track_id):
+            self.addMessage(f"区段{track_id}被列车占用，无法解锁")
+            return
+
+        if self.current_track_index == 1:
+            if self.section_status[self.current_track_index - 1] and self.check_train_occupancy(self.track_ids[self.current_track_index]):
+                # 延时1s解锁该区段
+                time.sleep(1)
+                for track in self.tracks:
+                    if track.TrackID == track_id:
+                        track.LockFlag = 0
+                        self.addMessage(f"区段{track_id}解锁")
+                        self.repaint()
+        else:
+            if self.section_status[self.current_track_index - 2] and (not self.check_train_occupancy(track_id)) and self.check_train_occupancy(self.track_ids[self.current_track_index]):
+                # 延时1s解锁该区段
+                time.sleep(1)
+                for track in self.tracks:
+                    if track.TrackID == track_id:
+                        track.LockFlag = 0
+                        self.addMessage(f"区段{track_id}解锁")
+                        self.repaint()
+
+    def check_train_occupancy(self, track_id):
+        """确认列车占用情况"""
+        for track in self.tracks:
+            if track.TrackID == track_id:
+                if track.TrackStatus == 1:
+                    return True
+                else:
+                    return False
+
+    def check_track_isLocked(self, track_id):
+        """确认轨道设备状态"""
+        for track in self.tracks:
+            if track.TrackID == track_id:
+                if track.LockFlag == 1:
+                    return True
+                else:
+                    return False
 
 
 if __name__ == '__main__':
